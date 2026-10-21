@@ -1,130 +1,174 @@
 @use '@/styles/screen';
-
+ 
+// ---- Reckitt.com design tokens (taken from the homepage stylesheet) ----
+$c-primary-800: #af1065; // jazzberry jam
+$c-primary-700: #d31a7d; // red violet (main brand pink, buttons/links)
+$c-primary-600: #ff007f; // rose
+$c-primary-200: #ffcce6; // pastel pink
+$c-primary-100: #ffe0f0; // pale rose
+$c-primary-000: #fff0f8; // tutu
+$c-neutral-900: #333333;
+$c-neutral-200: #e7e9ef;
+$c-neutral-100: #f5f5f5;
+$g-primary: linear-gradient(66.58deg, #c41974, #e80f57 49.79%, #ff593d);
+ 
+$content-max: 1088px; // reckitt.com --container-max
+$control-height: 48px;
+$radius-large: 10px;
+$radius-pill: 100px;
+ 
 .home {
   overflow-x: hidden;
-
+  min-height: 100%;
+  background: #ffffff;
+  color: $c-neutral-900;
+  // Reckitt uses the "Energy" font on reckitt.com. If you host it, put it first.
+  font-family: 'Energy', Arial, sans-serif;
+ 
+  // Re-point Fluent UI brand tokens at Reckitt pink (affects buttons, links, focus)
+  --colorBrandBackground: #{$c-primary-700};
+  --colorBrandBackgroundHover: #{$c-primary-800};
+  --colorBrandBackgroundPressed: #{$c-primary-800};
+  --colorBrandBackgroundSelected: #{$c-primary-700};
+  --colorBrandForeground1: #{$c-primary-700};
+  --colorBrandForeground2: #{$c-primary-800};
+  --colorBrandForegroundLink: #{$c-primary-700};
+  --colorBrandForegroundLinkHover: #{$c-primary-800};
+  --colorBrandStroke1: #{$c-primary-700};
+  --colorCompoundBrandStroke: #{$c-primary-700};
+  --colorCompoundBrandBackground: #{$c-primary-700};
+  --colorCompoundBrandBackgroundHover: #{$c-primary-800};
+ 
+  // White bar with the logo, like the reckitt.com header
+  .brandBar {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 77px;
+    padding: 9px 32px;
+    background: #ffffff;
+    border-bottom: 1.5px solid #f5f5f5;
+ 
+    @include screen.small-to-medium {
+      padding: 9px 16px;
+    }
+ 
+    .brandInner {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+ 
+    .logo {
+      display: block;
+      height: 52px;
+      width: auto;
+      max-width: 200px;
+      object-fit: contain;
+    }
+  }
+ 
+  // Gradient banner (reckitt.com "reckitt-gradient" section)
   .searchPanel {
     box-sizing: border-box;
-    min-height: 200px;
-    padding: 50px 0 10px;
-    background: linear-gradient(45deg, hsl(204deg 65% 71% / 100%) 0%, hsl(273deg 34% 75% / 100%) 43%, hsl(358deg 43% 75% / 100%) 57%, hsl(43deg 96% 63% / 100%) 100%);
-    color: white;
+    padding: 56px 0 40px;
+    background: $g-primary;
+    color: #ffffff;
     text-align: center;
-
-    // Dark mode variant: deeper, more muted gradient
-    :global([data-theme="dark"]) & {
-      background: linear-gradient(45deg, hsl(204deg 45% 30%) 0%, hsl(273deg 25% 32%) 43%, hsl(358deg 30% 32%) 57%, hsl(43deg 50% 30%) 100%);
+ 
+    .bannerHeader {
+      margin-bottom: 28px;
+      padding: 0 16px;
     }
-
+ 
     h1 {
-      margin: 0 0 1rem;
-      font-size: 2.5rem;
-      line-height: 3.25rem;
+      margin: 0;
+      font-size: 3.5rem;
+      line-height: 4rem;
+      font-weight: 700;
+      letter-spacing: -0.394px;
+ 
+      @include screen.small-to-medium {
+        font-size: 2.25rem;
+        line-height: 2.75rem;
+      }
     }
-
+ 
+    .subtitle {
+      margin: 8px 0 0;
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+      opacity: 0.95;
+    }
+ 
     .searchRow {
       display: flex;
       align-items: stretch;
       gap: 0.75rem;
       box-sizing: border-box;
       width: 100%;
-      max-width: 1140px;
+      max-width: $content-max;
       margin: 0 auto;
       padding: 0 32px;
-
+      text-align: left;
+ 
       > * {
-        height: 48px;
+        height: $control-height;
         box-sizing: border-box;
       }
-
+ 
       @include screen.small-to-medium {
         flex-direction: column;
         padding: 0 16px;
       }
     }
-
-    // Variation C: inline endpoint below search in hero
-    .inlineEndpoint {
-      max-width: 580px;
-      margin: 16px auto 0;
-      padding: 0 32px;
-      text-align: left;
-
-      // Override CopyableEndpoint label color for hero context
-      :global(.copyableEndpoint) .label,
-      span {
-        color: rgba(255, 255, 255, 0.7);
-      }
-    }
   }
-
-  // Variation B: endpoint bar between hero and content
-  .endpointBarWrapper {
-    padding: 16px 32px;
-    max-width: 1140px;
-    margin: 0 auto;
-    box-sizing: border-box;
-
-    @include screen.small-to-medium {
-      padding: 12px 16px;
-    }
-  }
-
-  // Variation A: search row moved below hero into content area
-  .searchRowBelow {
-    display: flex;
-    align-items: stretch;
-    gap: 0.75rem;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 16px 0 8px;
-
-    > * {
-      height: 48px;
-      box-sizing: border-box;
-    }
-
-    @include screen.small-to-medium {
-      flex-direction: column;
-    }
-  }
-
+ 
   .content {
     box-sizing: border-box;
-    max-width: 1140px;
+    max-width: $content-max;
     margin: 0 auto;
-    padding: 0 32px 32px;
-
+    padding: 0 32px 48px;
+ 
     @include screen.small-to-medium {
-      padding: 0 16px 16px;
+      padding: 0 16px 32px;
     }
-
+ 
     .pillsRow {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 0;
+      padding: 1.25rem 0 0.75rem;
       flex-wrap: wrap;
     }
-
+ 
     .mainContent {
       width: 100%;
       min-width: 0;
-
+ 
+      .results {
+        min-height: 200px;
+      }
+ 
       .emptyState {
-        color: var(--colorNeutralForeground4);
+        color: $c-neutral-900;
         text-align: center;
-
+        padding: 24px;
+        background: $c-primary-000;
+        border: 1.5px solid $c-primary-100;
+        border-radius: $radius-large;
+ 
         img {
           display: block;
           margin: 32px auto;
         }
       }
-
+ 
       .activeFilters {
         margin-bottom: 16px;
       }
     }
   }
 }
+ 

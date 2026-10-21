@@ -1,27 +1,60 @@
-# Runs the pre-deploy script after the environment is provisioned
-# It does the following:
-# 1. Copies the config.example file to config.json
-# 2. Updates the dataApiHostName, clientId, and tenantId in the config.json file
-# 3. Saves the updated config.json file
+$ErrorActionPreference = "Stop"
 
 Write-Host "Running pre-deploy script..."
 
-# $REPOSITORY_ROOT = git rev-parse --show-toplevel
-$REPOSITORY_ROOT = "$(Split-Path $MyInvocation.MyCommand.Path)/../.."
+$REPOSITORY_ROOT = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 
 # Load the azd environment variables
-& "$REPOSITORY_ROOT/infra/hooks/load_azd_env.ps1"
+& (Join-Path $PSScriptRoot "load_azd_env.ps1")
 
-# Update the config.json file
-Copy-Item $REPOSITORY_ROOT/public/config.example -Destination $REPOSITORY_ROOT/public/config.json -Force
+# Verify the required environment variables
+$requiredVariables = @(
+    "AZURE_API_CENTER",
+    "AZURE_API_CENTER_LOCATION",
+    "AZURE_CLIENT_ID",
+    "AZURE_TENANT_ID"
+)
 
-$config = Get-Content $REPOSITORY_ROOT/public/config.json | ConvertFrom-Json
-$config.dataApiHostName = "$($env:AZURE_API_CENTER).data.$($env:AZURE_API_CENTER_LOCATION).azure-apicenter.ms/workspaces/default"
+foreach ($name in $requiredVariables) {
+    if ([string]::IsNullOrWhiteSpace(
+        [Environment]::GetEnvironmentVariable($name)
+    )) {
+        throw "Required environment variable '$name' is missing."
+    }
+}
+
+# Read the existing template from the repository root
+$templatePath = Join-Path $REPOSITORY_ROOT "config.example.json"
+$distPath = Join-Path $REPOSITORY_ROOT "dist"
+$outputPath = Join-Path $distPath "config.json"
+
+if (!(Test-Path $templatePath)) {
+    throw "Configuration template not found: $templatePath"
+}
+
+if (!(Test-Path $distPath)) {
+    throw "Build output directory not found: $distPath"
+}
+
+$config = Get-Content $templatePath -Raw | ConvertFrom-Json
+
+# Validate the expected structure
+if ($null -eq $config.authentication) {
+    throw "The configuration template is missing the authentication object."
+}
+
+# Populate Azure configuration
+$config.dataApiHostName = "https://$($env:AZURE_API_CENTER).data.$($env:AZURE_API_CENTER_LOCATION).azure-apicenter.ms/workspaces/default"
 $config.authentication.clientId = $env:AZURE_CLIENT_ID
 $config.authentication.tenantId = $env:AZURE_TENANT_ID
 
-$config | ConvertTo-Json -Depth 100 | Out-File $REPOSITORY_ROOT/public/config.json -Force
+# Write the configuration directly to the build output
+$config |
+    ConvertTo-Json -Depth 100 |
+    Set-Content -Path $outputPath -Encoding utf8
 
-# Copy the config.json file to the dist folder
-Copy-Item $REPOSITORY_ROOT/public/config.json -Destination $REPOSITORY_ROOT/dist/config.json -Force
-Remove-Item $REPOSITORY_ROOT/dist/config.example -Force
+if (!(Test-Path $outputPath)) {
+    throw "Failed to generate $outputPath"
+}
+
+Write-Host "Configuration generated successfully: $outputPath"
